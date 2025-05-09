@@ -2,3 +2,4 @@ streamlit
 pandas
 isodate
 python-dotenv
+google-api-python-client
