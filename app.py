@@ -108,13 +108,13 @@ if topic:
             stars = round((row['final_score'] / top_score) ** 0.7 * 5, 2)
             podium_class = 'first' if row['rank'] == 1 else 'second' if row['rank'] == 2 else 'third'
             podium_html += f"""
-                <div class='podium {podium_class}'>
-                    <img src='https://img.youtube.com/vi/{row['video_id']}/0.jpg' width='200'><br>
-                    <strong>#{row['rank']} — <a href='{row['url']}' target='_blank'>{row['title']}</a></strong><br>
-                    <em>{row['channel']}</em><br>
-                    ⏱️ {row['duration_str']}<br>
-                    ⭐ Score: {stars:.1f} / 5
-                </div>
+            <div class='podium {podium_class}'>
+                <img src='https://img.youtube.com/vi/{row['video_id']}/0.jpg' width='200'><br>
+                <strong>#{row['rank']} — <a href='{row['url']}' target='_blank'>{row['title']}</a></strong><br>
+                <em>{row['channel']}</em><br>
+                ⏱️ {row['duration_str']}<br>
+                ⭐ Score: {stars:.1f} / 5
+            </div>
             """
         podium_html += "</div>"
         st.markdown(podium_html, unsafe_allow_html=True)
