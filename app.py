@@ -72,9 +72,11 @@ if topic:
             if row['duration_minutes'] < 1.01:
                 continue  # skip very short videos
             stars = round((row['final_score'] / top_score) * 5, 2)
+            st.image(f"https://img.youtube.com/vi/{row['video_id']}/0.jpg", width=320)
             st.markdown(f"""
 **#{row['rank']} — [{row['title']}]({row['url']})**  
 Channel: *{row['channel']}*  
+⏱️ Duration: {row['duration_minutes']} minutes  
 ⭐ Score: {stars} / 5  
             """)
 
@@ -84,9 +86,11 @@ Channel: *{row['channel']}*
                 if row['duration_minutes'] < 1.01:
                     continue  # skip very short videos
                 stars = round((row['final_score'] / top_score) * 5, 2)
+                st.image(f"https://img.youtube.com/vi/{row['video_id']}/0.jpg", width=320)
                 st.markdown(f"""
 **#{row['rank']} — [{row['title']}]({row['url']})**  
 Channel: *{row['channel']}*  
+⏱️ Duration: {row['duration_minutes']} minutes  
 ⭐ Score: {stars} / 5  
                 """)
 
