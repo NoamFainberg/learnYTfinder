@@ -109,11 +109,12 @@ if topic:
             podium_class = 'first' if row['rank'] == 1 else 'second' if row['rank'] == 2 else 'third'
             podium_html += f"""
             <div class='podium {podium_class}'>
-                <img src='https://img.youtube.com/vi/{row['video_id']}/0.jpg' width='200'><br>
-                <strong>#{row['rank']} — <a href='{row['url']}' target='_blank'>{row['title']}</a></strong><br>
-                <em>{row['channel']}</em><br>
-                ⏱️ {row['duration_str']}<br>
-                ⭐ Score: {stars:.1f} / 5
+                <img src='https://img.youtube.com/vi/{row['video_id']}/0.jpg' width='200' style='border-radius:10px;'><br>
+                <div style='font-size: 1.1rem; font-weight: bold;'>#{row['rank']}</div>
+                <a href='{row['url']}' target='_blank'><div style='font-size: 1rem;'>{row['title']}</div></a>
+                <div style='font-style: italic; font-size: 0.9rem;'>{row['channel']}</div>
+                <div>⏱️ {row['duration_str']}</div>
+                <div>⭐ Score: {stars:.1f} / 5</div>
             </div>
             """
         podium_html += "</div>"
