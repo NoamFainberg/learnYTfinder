@@ -101,38 +101,32 @@ if topic:
         top_score = top3['final_score'].max()
         st.subheader("🏆 Top 3 Recommendations")
 
-        podium_html = "<div class='video-container'>"
+        st.markdown("### 📋 Video Recommendations")
         for _, row in top3.iterrows():
             if row['duration_minutes'] < 1.01:
                 continue
-            stars = round((row['final_score'] / top_score) ** 0.7 * 5, 2)
-            podium_class = 'first' if row['rank'] == 1 else 'second' if row['rank'] == 2 else 'third'
-            podium_html += f"""
-            <div class='podium {podium_class}'>
-                <img src='https://img.youtube.com/vi/{row['video_id']}/0.jpg' width='200' style='border-radius:10px;'><br>
-                <div style='font-size: 1.1rem; font-weight: bold;'>#{row['rank']}</div>
-                <a href='{row['url']}' target='_blank'><div style='font-size: 1rem;'>{row['title']}</div></a>
-                <div style='font-style: italic; font-size: 0.9rem;'>{row['channel']}</div>
-                <div>⏱️ {row['duration_str']}</div>
-                <div>⭐ Score: {stars:.1f} / 5</div>
-            </div>
-            """
-        podium_html += "</div>"
-        st.markdown(podium_html, unsafe_allow_html=True)
+            st.image(f"https://img.youtube.com/vi/{row['video_id']}/0.jpg", width=320)
+            st.markdown(f"""
+**{row['title']}**  
+*Channel:* {row['channel']}  
+⏱️ Duration: {row['duration_str']}  
+🔗 [Watch on YouTube]({row['url']})
+---
+""", unsafe_allow_html=True)
 
         with st.expander("🔽 Show Next 2 Suggestions"):
             next2 = df.sort_values("rank").iloc[3:5]
             for i, row in next2.iterrows():
                 if row['duration_minutes'] < 1.01:
-                    continue  # skip very short videos
-                stars = round((row['final_score'] / top_score) ** 0.7 * 5, 2)
+                    continue
                 st.image(f"https://img.youtube.com/vi/{row['video_id']}/0.jpg", width=320)
-                st.markdown(f"⏱️ Duration: {row['duration_str']}")
                 st.markdown(f"""
-**#{row['rank']} — [{row['title']}]({row['url']})**  
-Channel: *{row['channel']}*  
-⭐ Score: {stars} / 5  
-                """)
+**#{row['rank']} — {row['title']}**  
+*Channel:* {row['channel']}  
+⏱️ Duration: {row['duration_str']}  
+🔗 [Watch on YouTube]({row['url']})
+---
+""", unsafe_allow_html=True)
 
         # Export options
         excel_path = "top_videos_scored.xlsx"
