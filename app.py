@@ -39,6 +39,33 @@ st.markdown("""
     .first { background-color: #ffd700; height: 260px; }
     .second { background-color: #c0c0c0; height: 220px; }
     .third { background-color: #cd7f32; height: 200px; }
+    .video-card {
+        border-radius: 12px;
+        padding: 1em;
+        background: linear-gradient(135deg, #fefefe, #f2f2f2);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        margin-bottom: 1.5em;
+        text-align: left;
+    }
+    .video-rank {
+        font-weight: bold;
+        font-size: 1.2rem;
+        border-radius: 8px;
+        padding: 0.3em 0.6em;
+        display: inline-block;
+        color: white;
+        background-color: #f39c12;
+        margin-bottom: 0.5em;
+    }
+    .video-thumbnail {
+        border-radius: 10px;
+        width: 100%;
+        max-width: 360px;
+    }
+    .video-stars {
+        font-size: 1.1rem;
+        color: #f1c40f;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -102,17 +129,18 @@ if topic:
         st.subheader("🏆 Top 3 Recommendations")
 
         st.markdown("### 📋 Video Recommendations")
-        for _, row in top3.iterrows():
-            if row['duration_minutes'] < 1.01:
-                continue
-            st.image(f"https://img.youtube.com/vi/{row['video_id']}/0.jpg", width=320)
+        for i, row in top3.iterrows():
+            stars = "⭐" * round((row['final_score'] / top_score) ** 0.7 * 5)
             st.markdown(f"""
-**{row['title']}**  
-*Channel:* {row['channel']}  
-⏱️ Duration: {row['duration_str']}  
-🔗 [Watch on YouTube]({row['url']})
----
-""", unsafe_allow_html=True)
+            <div class="video-card">
+                <div class="video-rank">#{i + 1}</div>
+                <img class="video-thumbnail" src="https://img.youtube.com/vi/{row['video_id']}/0.jpg" />
+                <h4>{row['title']}</h4>
+                <p><em>{row['channel']}</em></p>
+                <p class="video-stars">{stars}</p>
+                <p>⏱️ {row['duration_str']}<br>🔗 <a href="{row['url']}" target="_blank">Watch on YouTube</a></p>
+            </div>
+            """, unsafe_allow_html=True)
 
         with st.expander("🔽 Show Next 2 Suggestions"):
             next2 = df.sort_values("rank").iloc[3:5]
