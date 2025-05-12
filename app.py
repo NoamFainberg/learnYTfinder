@@ -2,6 +2,17 @@ import streamlit as st
 import pandas as pd
 import isodate
 from datetime import datetime
+import os
+
+# Load .env locally, use st.secrets on Streamlit Cloud
+if os.path.exists('.env'):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY") or st.secrets.get("YOUTUBE_API_KEY")
+
 from utils.youtube_api import search_videos, get_video_details
 
 def parse_duration(duration_str):
