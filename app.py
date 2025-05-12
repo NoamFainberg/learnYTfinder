@@ -20,52 +20,95 @@ st.title("📺 YouTube Video Finder & Scorer")
 
 st.markdown("""
 <style>
-    body, .stApp {
-        background-color: white;
-        color: black;
-    }
-    .video-container {
-        display: flex;
-        justify-content: center;
-        align-items: flex-end;
-        margin-bottom: 2em;
-        gap: 2em;
-    }
-    .podium {
-        text-align: center;
-        padding: 1em;
-        border-radius: 10px;
-    }
-    .first { background-color: #ffd700; height: 260px; }
-    .second { background-color: #c0c0c0; height: 220px; }
-    .third { background-color: #cd7f32; height: 200px; }
-    .video-card {
-        border-radius: 12px;
-        padding: 1em;
-        background: linear-gradient(135deg, #fefefe, #f2f2f2);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        margin-bottom: 1.5em;
-        text-align: left;
-    }
-    .video-rank {
-        font-weight: bold;
-        font-size: 1.2rem;
-        border-radius: 8px;
-        padding: 0.3em 0.6em;
-        display: inline-block;
-        color: white;
-        background-color: #f39c12;
-        margin-bottom: 0.5em;
-    }
-    .video-thumbnail {
-        border-radius: 10px;
-        width: 100%;
-        max-width: 360px;
-    }
-    .video-stars {
-        font-size: 1.1rem;
-        color: #f1c40f;
-    }
+body, .stApp {
+    background: linear-gradient(135deg, #dee4ff, #f9c3e6);
+    color: #1a1a1a;
+    font-family: 'Segoe UI', sans-serif;
+}
+.podium-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 32px;
+    margin: 2em 0 3em 0;
+}
+.podium-card {
+    position: relative;
+    width: 300px;
+    max-width: 300px;
+    background: #fff;
+    border-radius: 18px 18px 12px 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    padding: 1.7em 1.2em 1.2em 1.2em;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s;
+}
+.podium-1 { min-height: 480px; margin-top: 0px; background: linear-gradient(135deg, #ffe066 70%, #fffbe0 100%); z-index: 3; }
+.podium-2 { min-height: 440px; margin-top: 40px; background: linear-gradient(135deg, #b2bec3 70%, #f0f2f6 100%); z-index: 2; }
+.podium-3 { min-height: 400px; margin-top: 80px; background: linear-gradient(135deg, #f3a683 70%, #fff0e0 100%); z-index: 1; }
+.podium-rank {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #222;
+    color: #fff;
+    font-size: 2.5em;
+    font-weight: bold;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border: 4px solid #fff;
+    z-index: 10;
+}
+.podium-thumb {
+    width: 90%;
+    border-radius: 10px;
+    margin-top: 36px;
+    margin-bottom: 0.7em;
+    object-fit: cover;
+}
+.podium-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    text-align: center;
+    margin: 0.4em 0 0.1em 0;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    width: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-height: 6.5em; /* ~5 lines */
+}
+.podium-author {
+    font-size: 0.95em;
+    color: #555;
+    margin-bottom: 0.3em;
+    text-align: center;
+}
+.podium-score {
+    font-size: 1em;
+    color: #222;
+    margin-bottom: 0.2em;
+    font-weight: 500;
+}
+.podium-watch {
+    font-size: 0.95em;
+    color: #888;
+    margin-bottom: 0;
+}
+</style>
 </style>
 """, unsafe_allow_html=True)
 
@@ -126,48 +169,69 @@ if topic:
 
         top3 = df.sort_values("rank").head(3)
         top_score = top3['final_score'].max()
-        st.subheader("🏆 Top 3 Recommendations")
+        st.markdown('<h3 style="text-align:center;">🏆 Top 3 Recommendations</h3>', unsafe_allow_html=True)
 
-        st.markdown("### 📋 Video Recommendations")
-        for i, row in top3.iterrows():
-            stars = "⭐" * round((row['final_score'] / top_score) ** 0.7 * 5)
-            st.markdown(f"""
-            <div class="video-card">
-                <div class="video-rank">#{i + 1}</div>
-                <img class="video-thumbnail" src="https://img.youtube.com/vi/{row['video_id']}/0.jpg" />
-                <h4>{row['title']}</h4>
-                <p><em>{row['channel']}</em></p>
-                <p class="video-stars">{stars}</p>
-                <p>⏱️ {row['duration_str']}<br>🔗 <a href="{row['url']}" target="_blank">Watch on YouTube</a></p>
-            </div>
-            """, unsafe_allow_html=True)
+        # Podium layout for top 3 cards (improved structure)
+        podium_html = '<div class="podium-container">'
+        top3_list = top3.to_dict(orient="records")
+        # Render 2nd place (left) if exists
+        if len(top3_list) > 1:
+            podium_html += (
+                f'<div class="podium-card podium-2">'
+                f'<div class="podium-rank">2</div>'
+                f'<img class="podium-thumb" src="https://img.youtube.com/vi/{top3_list[1]["video_id"]}/0.jpg" />'
+                f'<div class="podium-title" title="{top3_list[1]["title"]}">#2 &mdash; {top3_list[1]["title"]}</div>'
+                f'<div class="podium-author">{top3_list[1]["channel"]}</div>'
+                f'<div class="podium-score">Score: {round(top3_list[1]["final_score"],2)}</div>'
+                f'<div class="podium-watch">⏱️ {top3_list[1]["duration_str"]}<br>🔗 <a href="{top3_list[1]["url"]}" target="_blank">Watch</a></div>'
+                f'</div>'
+            )
+        # Render 1st place (center) if exists
+        if len(top3_list) > 0:
+            podium_html += (
+                f'<div class="podium-card podium-1">'
+                f'<div class="podium-rank">1</div>'
+                f'<img class="podium-thumb" src="https://img.youtube.com/vi/{top3_list[0]["video_id"]}/0.jpg" />'
+                f'<div class="podium-title" title="{top3_list[0]["title"]}">#1 &mdash; {top3_list[0]["title"]}</div>'
+                f'<div class="podium-author">{top3_list[0]["channel"]}</div>'
+                f'<div class="podium-score">Score: {round(top3_list[0]["final_score"],2)}</div>'
+                f'<div class="podium-watch">⏱️ {top3_list[0]["duration_str"]}<br>🔗 <a href="{top3_list[0]["url"]}" target="_blank">Watch</a></div>'
+                f'</div>'
+            )
+        # Render 3rd place (right) if exists
+        if len(top3_list) > 2:
+            podium_html += (
+                f'<div class="podium-card podium-3">'
+                f'<div class="podium-rank">3</div>'
+                f'<img class="podium-thumb" src="https://img.youtube.com/vi/{top3_list[2]["video_id"]}/0.jpg" />'
+                f'<div class="podium-title" title="{top3_list[2]["title"]}">#3 &mdash; {top3_list[2]["title"]}</div>'
+                f'<div class="podium-author">{top3_list[2]["channel"]}</div>'
+                f'<div class="podium-score">Score: {round(top3_list[2]["final_score"],2)}</div>'
+                f'<div class="podium-watch">⏱️ {top3_list[2]["duration_str"]}<br>🔗 <a href="{top3_list[2]["url"]}" target="_blank">Watch</a></div>'
+                f'</div>'
+            )
+        podium_html += "</div>"
+        st.markdown(podium_html, unsafe_allow_html=True)
 
-        with st.expander("🔽 Show Next 2 Suggestions"):
+        # Show videos 4 and 5 only inside a native Streamlit expander, side by side
+        # Use only the native Streamlit expander with a styled label
+        with st.expander('✨ **Show More Suggestions**', expanded=False):
             next2 = df.sort_values("rank").iloc[3:5]
-            for i, row in next2.iterrows():
-                if row['duration_minutes'] < 1.01:
-                    continue
-                st.image(f"https://img.youtube.com/vi/{row['video_id']}/0.jpg", width=320)
-                st.markdown(f"""
-**#{row['rank']} — {row['title']}**  
-*Channel:* {row['channel']}  
-⏱️ Duration: {row['duration_str']}  
-🔗 [Watch on YouTube]({row['url']})
----
-""", unsafe_allow_html=True)
+            cols = st.columns(2)
+            for idx, (i, row) in enumerate(next2.iterrows()):
+                with cols[idx]:
+                    st.markdown(f'''
+                    <div style="background:#fff; border-radius:14px; box-shadow:0 4px 16px rgba(0,0,0,0.10); padding:1.2em 1em 1em 1em; margin:0.8em 0; display:flex; flex-direction:column; align-items:center;">
+                        <img src="https://img.youtube.com/vi/{row['video_id']}/0.jpg" style="width:95%;border-radius:10px;margin-bottom:0.7em;object-fit:cover;" />
+                        <div style="font-size:1.08em;font-weight:600;text-align:center;margin:0.2em 0 0.1em 0;overflow-wrap:break-word;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:4em;">#{row['rank']} — {row['title']}</div>
+                        <div style="font-size:0.95em;color:#555;margin-bottom:0.3em;text-align:center;">{row['channel']}</div>
+                        <div style="font-size:1em;color:#222;margin-bottom:0.2em;font-weight:500;">Score: {round(row['final_score'],2)}</div>
+                        <div style="font-size:0.95em;color:#888;margin-bottom:0;">⏱️ {row['duration_str']}<br>🔗 <a href="{row['url']}" target="_blank">Watch</a></div>
+                    </div>
+                    ''', unsafe_allow_html=True)
 
-        # Export options
-        excel_path = "top_videos_scored.xlsx"
-        df.to_excel(excel_path, index=False)
-
+        # Only build markdown_summary for top3
         markdown_summary = f"# Top 3 YouTube Videos for '{topic}'\n\n"
         for i, row in top3.iterrows():
             if row['duration_minutes'] < 1.01:
                 continue
-            stars = round((row['final_score'] / top_score) ** 0.7 * 5, 2)
-            markdown_summary += f"#{row['rank']} — **{row['title']}** by *{row['channel']}*\n"
-            markdown_summary += f"🔗 [Watch here]({row['url']})\n"
-            markdown_summary += f"⭐ Score: {stars} / 5\n\n"
-
-        st.download_button("📥 Download Excel", data=open(excel_path, "rb"), file_name="top_videos_scored.xlsx")
-        st.download_button("📥 Download Markdown Summary", data=markdown_summary, file_name="top_3_summary.md")
