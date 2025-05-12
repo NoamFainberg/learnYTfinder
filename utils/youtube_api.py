@@ -1,9 +1,15 @@
-import os
 from googleapiclient.discovery import build
-from dotenv import load_dotenv
+import streamlit as st
+import os
 
-load_dotenv()
-API_KEY = os.getenv("YOUTUBE_API_KEY")
+# Load .env locally, use st.secrets on Streamlit Cloud
+if os.path.exists('.env'):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+API_KEY = os.getenv("YOUTUBE_API_KEY") or st.secrets.get("YOUTUBE_API_KEY")
 
 youtube = build('youtube', 'v3', developerKey=API_KEY)
 

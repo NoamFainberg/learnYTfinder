@@ -12,6 +12,7 @@ if os.path.exists('.env'):
     except ImportError:
         pass
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY") or st.secrets.get("YOUTUBE_API_KEY")
+print("[DEBUG] YOUTUBE_API_KEY loaded:", YOUTUBE_API_KEY)
 
 from utils.youtube_api import search_videos, get_video_details
 
@@ -27,7 +28,86 @@ def parse_duration(duration_str):
         return f"{int(total_seconds // 60)}:{int(total_seconds % 60):02}", total_seconds / 60
 
 st.set_page_config(page_title="YouTube Video Finder", layout="centered")
-st.title("📺 YouTube Video Finder & Scorer")
+
+# --- learnYT Centered Heading with One Spark Each Side ---
+st.markdown('''
+<style>
+#learnyt-title {
+  text-align: center;
+  font-size: 2.25em;
+  font-weight: 900;
+  letter-spacing: 0.7px;
+  margin-top: 3.5em;
+  margin-bottom: 1.8em;
+  background: linear-gradient(90deg, #7f53ff 10%, #f9c3e6 80%);
+  color: #fff;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 18px rgba(127,83,255,0.10), 0 1px 0 #fff;
+  font-family: 'Segoe UI', 'Montserrat', 'Inter', sans-serif;
+  display: block;
+}
+.learnyt-spark {
+  font-size: 1.25em;
+  vertical-align: middle;
+  filter: drop-shadow(0 1px 2px #eee);
+  display: inline-block;
+}
+#learnyt-emoji {
+  font-size: 1.15em;
+  vertical-align: middle;
+  margin: 0 0.18em;
+  filter: drop-shadow(0 1px 2px #eee);
+  display: inline-block;
+}
+</style>
+<div style="width:100%;text-align:center;">
+  <h1 id="learnyt-title" style="display:inline-block;">
+    <span class="learnyt-spark">✨</span>
+    <span id="learnyt-emoji">learnYT</span>
+    <span class="learnyt-spark">✨</span>
+  </h1>
+</div>
+''', unsafe_allow_html=True)
+
+# --- Friendly CTA above input ---
+st.markdown('<div style="text-align:center; font-size:1.18em; color:#444; font-weight:600; margin-bottom:0.6em;">What do you want to learn today? <span style="color:#f3a683;">Type a topic and let the podium magic begin!</span></div>', unsafe_allow_html=True)
+
+# --- Styled Search Bar ---
+st.markdown("""
+<style>
+body, .stApp {
+    background: linear-gradient(135deg, #dee4ff, #f9c3e6) !important;
+    color: #1a1a1a;
+    font-family: 'Segoe UI', sans-serif;
+}
+.stTextInput > div > div > input {
+    border-radius: 14px;
+    border: 1.5px solid #ffe066;
+    font-size: 1.1em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    padding: 0.9em 1.1em;
+    background: #fff !important;
+    color: #111;
+    transition: border 0.2s;
+}
+.stTextInput > div[data-testid="stTextInputRootElement"] {
+    background: transparent !important;
+}
+
+.stTextInput > div > div > input:focus {
+    border: 2px solid #f3a683;
+    outline: none;
+}
+</style>
+""", unsafe_allow_html=True)
+
+topic = st.text_input("", "", key="topic_search", label_visibility="collapsed", placeholder="Type a topic and press Enter...")
+if not topic.strip():
+    st.stop()
+
+# (Removed duplicate st.text_input for 'Enter a topic to search for educational videos:')
 
 st.markdown("""
 <style>
@@ -123,12 +203,13 @@ body, .stApp {
 </style>
 """, unsafe_allow_html=True)
 
-topic = st.text_input("Enter a topic to search for educational videos:", "")
+# Removed duplicate topic input (was: st.text_input('Enter a topic to search for educational videos:', ''))
 
 if topic:
     with st.spinner("Fetching and analyzing videos..."):
         video_ids = search_videos(topic)
         video_data = get_video_details(video_ids)
+        print("[DEBUG] video_data:", video_data)
 
         records = []
         for item in video_data:
@@ -150,7 +231,12 @@ if topic:
             })
 
         df = pd.DataFrame(records)
-        df['published'] = pd.to_datetime(df['published']).dt.tz_localize(None)
+        print("[DEBUG] df.columns:", df.columns)
+        if 'published' in df.columns:
+            df['published'] = pd.to_datetime(df['published']).dt.tz_localize(None)
+        else:
+            st.error("❌ The 'published' column is missing. Please ensure the API response includes it.")
+            st.stop()
 
         df['likes_per_view'] = df['likes'] / df['views']
         df['comments_per_minute'] = df['comments'] / (df['duration_minutes'] + 0.1)
