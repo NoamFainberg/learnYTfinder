@@ -3,6 +3,7 @@ import pandas as pd
 import isodate
 from datetime import datetime
 import os
+from logo import display_logo
 
 # Load .env locally, use st.secrets on Streamlit Cloud
 if os.path.exists('.env'):
@@ -29,57 +30,40 @@ def parse_duration(duration_str):
 
 st.set_page_config(page_title="YouTube Video Finder", layout="centered")
 
-# --- learnYT Centered Heading with One Spark Each Side ---
-st.markdown('''
-<style>
-#learnyt-title {
-  text-align: center;
-  font-size: 2.25em;
-  font-weight: 900;
-  letter-spacing: 0.7px;
-  margin-top: 3.5em;
-  margin-bottom: 1.8em;
-  background: linear-gradient(90deg, #7f53ff 10%, #f9c3e6 80%);
-  color: #fff;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 2px 18px rgba(127,83,255,0.10), 0 1px 0 #fff;
-  font-family: 'Segoe UI', 'Montserrat', 'Inter', sans-serif;
-  display: block;
-}
-.learnyt-spark {
-  font-size: 1.25em;
-  vertical-align: middle;
-  filter: drop-shadow(0 1px 2px #eee);
-  display: inline-block;
-}
-#learnyt-emoji {
-  font-size: 1.15em;
-  vertical-align: middle;
-  margin: 0 0.18em;
-  filter: drop-shadow(0 1px 2px #eee);
-  display: inline-block;
-}
-</style>
-<div style="width:100%;text-align:center;">
-  <h1 id="learnyt-title" style="display:inline-block;">
-    <span class="learnyt-spark">✨</span>
-    <span id="learnyt-emoji">learnYT</span>
-    <span class="learnyt-spark">✨</span>
-  </h1>
-</div>
-''', unsafe_allow_html=True)
+# Style the <summary> element (used in st.expander) - centered and dark red block
+st.markdown("""
+    <style>
+    summary {
+        text-align: center;
+        color: #f5f5f5;
+        font-size: 1.4rem;
+        font-weight: 600;
+        background-color: #8B0000;
+        padding: 12px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    details > summary::marker {
+        color: #f5f5f5;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+from logo import display_logo
+display_logo()
 
 # --- Friendly CTA above input ---
-st.markdown('<div style="text-align:center; font-size:1.18em; color:#444; font-weight:600; margin-bottom:0.6em;">What do you want to learn today? <span style="color:#f3a683;">Type a topic and let the podium magic begin!</span></div>', unsafe_allow_html=True)
+st.markdown('<div style="text-align:center; font-size:1.18em; color:#D3D3D3; font-weight:600; margin-bottom:0.6em;">What do you want to learn today? <span style="color:#D3D3D3;">Type a topic and let the podium magic begin!</span></div>', unsafe_allow_html=True)
 
 # --- Styled Search Bar ---
 st.markdown("""
 <style>
 body, .stApp {
-    background: linear-gradient(135deg, #dee4ff, #f9c3e6) !important;
-    color: #1a1a1a;
+    background: #1c1c1e !important;
+    color: #222222;
     font-family: 'Segoe UI', sans-serif;
 }
 .stTextInput > div > div > input {
@@ -266,7 +250,7 @@ if topic:
 
         top3 = df.sort_values("rank").head(3)
         top_score = top3['final_score'].max()
-        st.markdown('<h3 style="text-align:center;">🏆 Top 3 Recommendations</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 style="text-align:center; color: #D3D3D3;">🏆 Top 3 Recommendations</h3>', unsafe_allow_html=True)
 
         # Podium layout for top 3 cards (improved structure)
         podium_html = '<div class="podium-container">'
@@ -310,9 +294,10 @@ if topic:
         podium_html += "</div>"
         st.markdown(podium_html, unsafe_allow_html=True)
 
+
         # Show videos 4 and 5 only inside a native Streamlit expander, side by side
-        # Use only the native Streamlit expander with a styled label
-        with st.expander('✨ **Show More Suggestions**', expanded=False):
+        # Use only the native Streamlit expander with a styled label and custom HTML styling
+        with st.expander("Show More Suggestions", expanded=False):
             next2 = df.sort_values("rank").iloc[3:5]
             cols = st.columns(2)
             for idx, (i, row) in enumerate(next2.iterrows()):
